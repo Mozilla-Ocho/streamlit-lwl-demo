@@ -4,6 +4,10 @@ This small application is a space to explore use cases for creating personalized
 
 The app is built using the Streamlit framework, which is a Python library for creating web applications with minimal effort.
 
+# Live demo
+
+Deployed on Streamlit community cloud at: https://learn-with-llms-demo.streamlit.app/
+
 # Local installation
 
 Make sure you have python (from 3.8 to 3.12) installed. I recommend virtual environments to manage dependencies.
