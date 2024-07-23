@@ -1,13 +1,21 @@
 import json
 
+# json_example = """{ "questions": [ {
+# "questionTitle": "What is the primary subject of the material?", 
+# "answers": ["cats","outer space","coffee","poetry"], 
+# "answerIndex": 2, 
+# "reasoning": "Coffee is the only choice that is mentioned by the document.",
+# "context_relevance": "Roasting your own coffee is a great way to develop loyal business as a new coffee shop owner",
+# "requisite_knowledge": "Go back and review the fundamentals of coffee preparation",
+# "follow_up_knowledge": "Learn next about coffee packaging and branding best practices", }, ... ], }"""
 json_example = """{ "questions": [ {
-"questionTitle": "What is the primary subject of the material?", 
-"answers": ["cats","outer space","coffee","poetry"], 
-"answerIndex": 2, 
-"reasoning": "Coffee is the only choice that is mentioned by the document.",
-"context_relevance": "Roasting your own coffee is a great way to develop loyal business as a new coffee shop owner",
-"requisite_knowledge": "Go back and review the fundamentals of coffee preparation",
-"follow_up_knowledge": "Learn next about coffee packaging and branding best practices", }, ... ], }"""
+"questionTitle": "<QUESTION TITLE>", 
+"answers": ["<ANSWER 1>","<ANSWER 2>","<ANSWER 3>","<ANSWER 4>"], 
+"answerIndex": <CORRECT ANSWER INDEX>, 
+"reasoning": "<CORRECT ANSWER REASONING>",
+"context_relevance": "<LEARNING CONTEXT RELEVANCE>",
+"requisite_knowledge": "<HOW TO GET THE RIGHT ANSWER>",
+"follow_up_knowledge": "<WHAT TO LEARN NEXT>, }, ... ], }"""
 
 # a json schema specification for the example above:
 # gpt4o doesn't actually seem to need this to produce the correct output, the example works and with fewer tokens.
@@ -64,4 +72,4 @@ Each question also has four blurbs:
 3. If get the wrong answer, describe what I should to to learn the requisite knowledge ("requisite_knowledge")
 4. If I get the right answer, describe what I should do next given my learning context ("follow_up_knowledge")
  
-Example JSON output is as follows: {json_example}"""
+Example JSON output using placeholders: {json_example}"""
