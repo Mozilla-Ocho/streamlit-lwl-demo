@@ -21,7 +21,7 @@ def generate_key_topics(*, source_material, model, _openai_api_key):
     body = response.choices[0].message.content
     topics = json.loads(body)["topics"] # prompt schema asks for this key
     topics.insert(0, "Overview") # insert "overview" as first topic
-    return topics
+    return [topics, prompt, response]
 
 @st.cache_data(persist="disk")
 def generate_learning_context(*, goals, skills, model, _openai_api_key):
@@ -34,8 +34,9 @@ def generate_learning_context(*, goals, skills, model, _openai_api_key):
           ],
         temperature=0.4
     )
-    learning_context = response.choices[0].message.content
-    return learning_context
+    body = response.choices[0].message.content
+    learning_context = body
+    return [learning_context, prompt, response]
 
 @st.cache_data(persist="disk")
 def generate_questions(*, for_key_topic, learning_context, source_material, model, _openai_api_key):
@@ -53,5 +54,5 @@ def generate_questions(*, for_key_topic, learning_context, source_material, mode
     )
     body = response.choices[0].message.content
     questions = json.loads(body)["questions"]
-    return questions
+    return [questions, prompt, response]
 
