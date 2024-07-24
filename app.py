@@ -27,14 +27,12 @@ if "active_topic_idx" not in st.session_state:
 if "blank_out_questions_nav_trick" not in st.session_state:
     st.session_state.blank_out_questions_nav_trick = 0
 
-if st.secrets.openai_api_key:
-    st.session_state.openai_api_key = st.secrets.openai_api_key
-    st.session_state.has_saved_openai_key = True
 
-if not st.secrets.bypass_query_auth:
-    if not "a" in st.query_params or st.query_params["a"] != st.secrets.query_auth_secret:
-        st.markdown("---------\n\nThis demo requires an authenticated URL to limit access to internal users. Please contact @jwhiting on slack")
-        st.stop()
+if "a" in st.query_params and st.query_params["a"] == st.secrets.query_auth_secret:
+    # when the query auth param is present and matches, it will allow the api key secret to be loaded automatically.
+    if st.secrets.openai_api_key:
+        st.session_state.openai_api_key = st.secrets.openai_api_key
+        st.session_state.has_saved_openai_key = True
 
 col1, col2 = st.columns([1,3])
 
@@ -53,7 +51,8 @@ with col1:
     with st.form(key='inputs'):
         if not st.session_state.has_saved_openai_key:
             # collect an api key if the secrets file doesn't have one.
-            st.text_input("OpenAI API key (not saved)", key='openai_api_key')
+            st.text_input("OpenAI API key (not saved)", key='openai_api_key', placeholder="sk-...")
+            st.caption("Mozillians please contact @jwhiting on slack for access")
         if False:
             # temporarily disable this feature. always using 4o-mini for now.
             st.selectbox("Model (4o mini highly recommended for cost effectiveness)", model_options, key='model')

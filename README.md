@@ -38,13 +38,10 @@ Create a file `.streamlit/secrets.toml` with the following content:
 
 ```toml
 # the api key used for chat completion inference calls at openai, e.g. 'sk-...'
-# if left empty the UI will ask for it each time in the form.
+# if left empty the UI will ask for it each time in the form. if populated, the query_auth_secret is present, it will be used automatically w/o a user input.
 openai_api_key=''
 
-# set true in local dev for easier access, set true for deployed app to limit access to people with the secret url.
-bypass_query_auth=false
-
-# when not bypass_query_auth, query string param 'a' must match this:
+# query string param 'a' must match this which activates usage of the api key above if present.
 query_auth_secret='...'
 
 # whether to show prompts and inference response details in a debug area
