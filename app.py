@@ -6,13 +6,14 @@ from streamlit_inspector import inspect
 
 st.set_page_config(page_title="Learn with LLMs explorer", page_icon="🧊", layout="wide")
 
-
 st.title("Learning with LLMs Concept Explorer")
 
 model_options = ["gpt-4o", "gpt-4o-mini"]
 
 if "openai_model" not in st.session_state:
     st.session_state.model = model_options[1]
+if "has_saved_openai_key" not in st.session_state:
+    st.session_state.has_saved_openai_key = False
 if "openai_api_key" not in st.session_state:
     st.session_state.openai_api_key = ''
 if 'goals' not in st.session_state:
@@ -26,23 +27,78 @@ if "active_topic_idx" not in st.session_state:
 if "blank_out_questions_nav_trick" not in st.session_state:
     st.session_state.blank_out_questions_nav_trick = 0
 
+if st.secrets.openai_api_key:
+    st.session_state.openai_api_key = st.secrets.openai_api_key
+    st.session_state.has_saved_openai_key = True
+
+authenticator = None
+email = None
+if not st.secrets.bypass_google_auth:
+    # https://github.com/MrBounty/streamlit-google-auth/tree/main?tab=readme-ov-file
+    import tempfile
+    import os
+    from streamlit_google_auth import Authenticate
+    with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.json') as temp_file:
+        temp_file.write(st.secrets.google_client_json_secret_raw)
+        temp_file.flush()
+        temp_file.seek(0)
+        temp_file_path = temp_file.name
+        try:
+            #file_contents = open(temp_file_path, 'r').read()
+            #st.write(file_contents)
+            authenticator = Authenticate(
+                secret_credentials_path=temp_file_path,
+                cookie_name='au',
+                cookie_key=st.secrets.cookie_key,
+                # redirect_uri is not secret but this is a good place to put it because where else can i put environmental config that changes in localhost vs streamlit cloud?
+                redirect_uri=st.secrets.redirect_uri,
+            )
+            authenticator.check_authentification()
+            # Display the login button if the user is not authenticated
+            authenticator.login()
+        finally:
+            os.unlink(temp_file_path)
+
+    if not st.session_state['connected']:
+        # stop here, the google auth button is all they will see.
+        st.markdown("---------\n\nThis demo requires a @mozilla.com google account to use. Please log in with your Mozilla account.")
+        st.stop()
+
+# if authed but not a mozilla.com user, stop.
+    email = st.session_state['user_info'].get('email')
+    if not email.endswith('@mozilla.com'):
+        st.markdown(f"This demo requires a @mozilla.com google account to use. You are currently logged in using a Google account from a different domain ({email}). Please log out, then log in with a @mozilla.com account.")
+        if st.button('Log out'):
+            authenticator.logout()
+        st.stop()
+
+# begin regular app UI
 col1, col2 = st.columns([1,3])
+
+if authenticator:
+    st.write(f"You are logged in as: {email}")
+    if st.button('Log out'):
+        authenticator.logout()
 
 # some dev debugging and state clearing
 #st.cache_data.clear()
-show_debug_area = False
-debug_area = st.container()
-if show_debug_area:
+debug_area = None
+if st.secrets.show_debug_area:
+    debug_area = st.container()
     debug_area.markdown("----\n#### Debugging / Logging Area:")
 def debug(label, thing):
-    if show_debug_area:
+    if debug_area:
         timestamp = datetime.datetime.now().strftime("%H:%M:%S")
         debug_area.expander(f"{timestamp} {label}").write(thing)
 
 with col1:
     with st.form(key='inputs'):
-        st.text_input("OpenAI API key (not saved)", key='openai_api_key')
-        st.selectbox("Model (4o mini highly recommended for cost effectiveness)", model_options, key='model')
+        if not st.session_state.has_saved_openai_key:
+            # collect an api key if the secrets file doesn't have one.
+            st.text_input("OpenAI API key (not saved)", key='openai_api_key')
+        if False:
+            # temporarily disable this feature. always using 4o-mini for now.
+            st.selectbox("Model (4o mini highly recommended for cost effectiveness)", model_options, key='model')
         st.subheader("Learning Goals")
         goals = st.text_area("What are your learning goals? This will help the AI know what's most relevant to you.", key='goals')
         st.subheader("Current Skills Level")
@@ -51,7 +107,7 @@ with col1:
         source_material = st.text_area("Enter the source material here. Using Firefox's reader view on a web page is recommended, then just copy+paste:", key='source_material')
         submit_source_material = st.form_submit_button("Submit")
         if submit_source_material:
-            # set quiz back to the start if regenerating
+            # set quiz back to the first topic if regenerating, since the number and nature of the topics can change.
             st.session_state.active_topic_idx = 0
   
 def quiz_questions(questions):

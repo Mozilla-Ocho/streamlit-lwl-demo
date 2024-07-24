@@ -34,6 +34,29 @@ pip install -r requirements.txt
 
 Most of those deps are from the streamlit package.
 
+Create a file `.streamlit/secrets.toml` with the following content:
+
+```toml
+# the api key used for chat completion inference calls at openai.
+# if not present, the UI will ask for it each time.
+openai_api_key=''
+
+# set true in local dev, set true for deployed app
+bypass_google_auth=false
+
+# whether to show prompts and inference response details in a debug area
+show_debug_area=true
+
+# in the deployed app, this is a json-format string of the google oauth client secret
+google_client_json_secret_raw='''...'''
+
+# in deployed app, a secret value for the auth cookie. 
+cookie_key='...'
+
+# redirect_uri is not a secret, but i'm not sure where else to set environment config
+redirect_uri='https://learn-with-llms-demo.streamlit.app/'
+```
+
 Finally, to run the app:
 
 ```bash
