@@ -31,54 +31,12 @@ if st.secrets.openai_api_key:
     st.session_state.openai_api_key = st.secrets.openai_api_key
     st.session_state.has_saved_openai_key = True
 
-authenticator = None
-email = None
-if not st.secrets.bypass_google_auth:
-    # https://github.com/MrBounty/streamlit-google-auth/tree/main?tab=readme-ov-file
-    import tempfile
-    import os
-    from streamlit_google_auth import Authenticate
-    with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.json') as temp_file:
-        temp_file.write(st.secrets.google_client_json_secret_raw)
-        temp_file.flush()
-        temp_file.seek(0)
-        temp_file_path = temp_file.name
-        try:
-            #file_contents = open(temp_file_path, 'r').read()
-            #st.write(file_contents)
-            authenticator = Authenticate(
-                secret_credentials_path=temp_file_path,
-                cookie_name='au',
-                cookie_key=st.secrets.cookie_key,
-                # redirect_uri is not secret but this is a good place to put it because where else can i put environmental config that changes in localhost vs streamlit cloud?
-                redirect_uri=st.secrets.redirect_uri,
-            )
-            authenticator.check_authentification()
-            # Display the login button if the user is not authenticated
-            authenticator.login()
-        finally:
-            os.unlink(temp_file_path)
-
-    if not st.session_state['connected']:
-        # stop here, the google auth button is all they will see.
-        st.markdown("---------\n\nThis demo requires a @mozilla.com google account to use. Please log in with your Mozilla account.")
+if not st.secrets.bypass_query_auth:
+    if not "a" in st.query_params or st.query_params["a"] != st.secrets.query_auth_secret:
+        st.markdown("---------\n\nThis demo requires an authenticated URL to limit access to internal users. Please contact @jwhiting on slack")
         st.stop()
 
-# if authed but not a mozilla.com user, stop.
-    email = st.session_state['user_info'].get('email')
-    if not email.endswith('@mozilla.com'):
-        st.markdown(f"This demo requires a @mozilla.com google account to use. You are currently logged in using a Google account from a different domain ({email}). Please log out, then log in with a @mozilla.com account.")
-        if st.button('Log out'):
-            authenticator.logout()
-        st.stop()
-
-# begin regular app UI
 col1, col2 = st.columns([1,3])
-
-if authenticator:
-    st.write(f"You are logged in as: {email}")
-    if st.button('Log out'):
-        authenticator.logout()
 
 # some dev debugging and state clearing
 #st.cache_data.clear()

@@ -37,24 +37,19 @@ Most of those deps are from the streamlit package.
 Create a file `.streamlit/secrets.toml` with the following content:
 
 ```toml
-# the api key used for chat completion inference calls at openai.
-# if not present, the UI will ask for it each time.
+# the api key used for chat completion inference calls at openai, e.g. 'sk-...'
+# if left empty the UI will ask for it each time in the form.
 openai_api_key=''
 
-# set true in local dev, set true for deployed app
-bypass_google_auth=false
+# set true in local dev for easier access, set true for deployed app to limit access to people with the secret url.
+bypass_query_auth=false
+
+# when not bypass_query_auth, query string param 'a' must match this:
+query_auth_secret='...'
 
 # whether to show prompts and inference response details in a debug area
 show_debug_area=true
 
-# in the deployed app, this is a json-format string of the google oauth client secret
-google_client_json_secret_raw='''...'''
-
-# in deployed app, a secret value for the auth cookie. 
-cookie_key='...'
-
-# redirect_uri is not a secret, but i'm not sure where else to set environment config
-redirect_uri='https://learn-with-llms-demo.streamlit.app/'
 ```
 
 Finally, to run the app:
