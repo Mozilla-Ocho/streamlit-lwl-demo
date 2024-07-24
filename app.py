@@ -4,7 +4,7 @@ from pipeline import generate_key_topics, generate_learning_context, generate_qu
 import json
 from streamlit_inspector import inspect
 
-st.set_page_config(page_title="Learn with LLMs explorer", page_icon="🧊", layout="wide")
+st.set_page_config(page_title="Learn with LLMs explorer", page_icon="🧊", layout="wide", initial_sidebar_state="collapsed")
 
 st.title("Learning with LLMs Concept Explorer")
 
