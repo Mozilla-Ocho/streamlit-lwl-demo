@@ -6,8 +6,6 @@ from streamlit_inspector import inspect
 
 st.set_page_config(page_title="Learn with LLMs explorer", page_icon="🧊", layout="wide", initial_sidebar_state="collapsed")
 
-st.title("Learning with LLMs Concept Explorer")
-
 model_options = ["gpt-4o", "gpt-4o-mini"]
 
 if "openai_model" not in st.session_state:
@@ -27,12 +25,16 @@ if "active_topic_idx" not in st.session_state:
 if "blank_out_questions_nav_trick" not in st.session_state:
     st.session_state.blank_out_questions_nav_trick = 0
 
-
 if "a" in st.query_params and st.query_params["a"] == st.secrets.query_auth_secret:
     # when the query auth param is present and matches, it will allow the api key secret to be loaded automatically.
     if st.secrets.openai_api_key:
         st.session_state.openai_api_key = st.secrets.openai_api_key
         st.session_state.has_saved_openai_key = True
+
+st.title("Learning with LLMs Concept Explorer")
+
+if st.session_state.has_saved_openai_key:
+    st.markdown("**Feedback please!** Let us know what you think in our project channel [#liminal](slack://channel?team=T027LFU12&id=C06MJQQ1350) or via DM to [@jwhiting](slack://user?team=T027LFU12&id=U03U66G63MW) or [@Jacob Ervin](slack://user?team=T027LFU12&id=U04BV9MUJRZ)")
 
 col1, col2 = st.columns([1,3])
 
