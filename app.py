@@ -1,13 +1,13 @@
 import streamlit as st
 import datetime
-from generators import generate_key_topics, generate_learning_context, generate_questions
 import json
-from streamlit_inspector import inspect
+from generators import generate_key_topics, generate_learning_context, generate_questions
 
+# defining the streamlit page config. this is the title, icon, layout, and initial sidebar state.
 st.set_page_config(page_title="Learn with LLMs explorer", page_icon="🧊", layout="wide", initial_sidebar_state="collapsed")
 
+# initialize session state variables and defaults
 model_options = ["gpt-4o", "gpt-4o-mini"]
-
 if "openai_model" not in st.session_state:
     st.session_state.model = model_options[1]
 if "has_saved_openai_key" not in st.session_state:
@@ -24,24 +24,21 @@ if "active_topic_idx" not in st.session_state:
     st.session_state.active_topic_idx = 0
 if "blank_out_questions_nav_trick" not in st.session_state:
     st.session_state.blank_out_questions_nav_trick = 0
-
 if "a" in st.query_params and st.query_params["a"] == st.secrets.query_auth_secret:
-    # when the query auth param is present and matches, it will allow the api key secret to be loaded automatically.
+    # when the query auth param is present and matches, it will allow the api key secret from secrets.toml to be loaded automatically into the session.
     if st.secrets.openai_api_key:
         st.session_state.openai_api_key = st.secrets.openai_api_key
         st.session_state.has_saved_openai_key = True
 
+# heading area
 st.title("Learning with LLMs Concept Explorer")
-
 if st.session_state.has_saved_openai_key:
     st.markdown("**Feedback please!** Let us know what you think in our project channel [#liminal](slack://channel?team=T027LFU12&id=C06MJQQ1350) or via DM to [@jwhiting](slack://user?team=T027LFU12&id=U03U66G63MW) or [@Jacob Ervin](slack://user?team=T027LFU12&id=U04BV9MUJRZ)")
 
-can_generate_quiz = not (st.session_state.goals == '' or st.session_state.skills == '' or st.session_state.source_material == '' or st.session_state.openai_api_key == '')
-
+# left column for form inputs, right column for quiz materials
 col1, col2 = st.columns([1,3])
 
-# some dev debugging and state clearing
-#st.cache_data.clear()
+# create a debug area to render prompts and generation responses when configured to do so via the secrets.toml file.
 debug_area = None
 if st.secrets.show_debug_area:
     debug_area = st.container()
@@ -51,14 +48,15 @@ def debug(label, thing):
         timestamp = datetime.datetime.now().strftime("%H:%M:%S")
         debug_area.expander(f"{timestamp} {label}").write(thing)
 
+# form inputs for the user to provide their learning goals, current skills, and source material.
 with col1:
     with st.form(key='inputs'):
         if not st.session_state.has_saved_openai_key:
-            # collect an api key if the secrets file doesn't have one.
+            # collect an api key if the session doesn't have one imported from secrets.
             st.text_input("OpenAI API key (not saved)", key='openai_api_key', placeholder="sk-...")
             st.caption("Mozillians please contact @jwhiting on slack for access")
         if False:
-            # temporarily disable this feature. always using 4o-mini for now.
+            # temporarily disable model selection dropdown for now, always using 4o-mini which is excellent and cheap
             st.selectbox("Model (4o mini highly recommended for cost effectiveness)", model_options, key='model')
         st.subheader("Learning Goals")
         goals = st.text_area("What are your learning goals? This will help the AI know what's most relevant to you.", key='goals')
@@ -68,10 +66,11 @@ with col1:
         source_material = st.text_area("Enter the source material here. Using Firefox's reader view on a web page is recommended, then just copy+paste:", key='source_material')
         submit_source_material = st.form_submit_button("Submit")
         if submit_source_material:
-            # set quiz back to the first topic if regenerating, since the number and nature of the topics can change.
+            # set quiz back to the first topic if regenerating new materials, since the number and nature of the topics can change.
             st.session_state.active_topic_idx = 0
   
 def quiz_questions(questions):
+    # render the quiz questions and answers in a collapsible expander for each question, along with the additional blurbs we've generated for each question.
     if st.session_state.blank_out_questions_nav_trick != 0:
         # this is a hack when navigating between quiz topic sections to blank out the questions. otherwise streamlit will keep the old questions in the UI in a disabled state while generating new ones, which just looks really bad visually and is hard to understand what is happening.
         # navigation works by setting blank_out_questions_nav_trick to -1 or 1, then rerunning the script. this will cause the questions to be blanked out, then the actual index is updated, which causes new questions will be generated.
@@ -99,6 +98,7 @@ def quiz_questions(questions):
                         st.markdown(f'**What to review to get this right:** {question["requisite_knowledge"]}')
 
 def current_quiz_section(topics, learning_context):
+    # render the current quiz section based on the active topic index. includes the title and the navigation buttons.
     if st.session_state.active_topic_idx >= len(topics):
         st.session_state.active_topic_idx = 0
     s_idx = st.session_state.active_topic_idx
@@ -109,6 +109,7 @@ def current_quiz_section(topics, learning_context):
     with col2:
         if s_idx > 0:
             if st.button("Previous topic"):
+                # see quiz_questions for an explanation of this hack
                 st.session_state.blank_out_questions_nav_trick = -1
                 st.rerun()
     with col3:
@@ -125,6 +126,7 @@ def current_quiz_section(topics, learning_context):
     quiz_questions(questions)
 
 def quiz():
+    # the top level quiz function that generates the learning context, key topics, and quiz sections+questions.
     st.subheader("Initial context for the quiz:")
     goals = st.session_state.goals
     skills = st.session_state.skills
@@ -150,6 +152,8 @@ def quiz():
     current_quiz_section(topics, learning_context)
 
 with col2:
+    # simple check to see if all the form fields are filled in before generating the quiz.
+    can_generate_quiz = not (st.session_state.goals == '' or st.session_state.skills == '' or st.session_state.source_material == '' or st.session_state.openai_api_key == '')
     if can_generate_quiz:
         quiz()
     else:
