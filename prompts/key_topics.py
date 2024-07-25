@@ -1,25 +1,4 @@
-import json
-
-#json_example = '{"topics":["Survey of modern coffee roasting techniques","Roasting at high volume",...]}'
 json_example = '{"topics":["<INSERT TOPIC 1>","<INSERT TOPIC 2>", ...<ADD MORE TOPICS>...]}'
-
-# json_schema = '''
-# {
-#     "type": "object",
-#     "properties": {
-#         "topics": {
-#             "type": "array",
-#             "items": {
-#                 "type": "string"
-#             },
-#             "minItems": 3,
-#             "maxItems": 10
-#         }
-#     },
-#     "required": ["topics"]
-# }
-# '''
-# json_schema = json.dumps(json.loads(json_schema)) # compact whitespace
 
 def key_topics_prompt(*, source_material):
     return f"""

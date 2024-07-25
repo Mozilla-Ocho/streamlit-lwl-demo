@@ -1,6 +1,6 @@
 import streamlit as st
 import datetime
-from pipeline import generate_key_topics, generate_learning_context, generate_questions
+from generators import generate_key_topics, generate_learning_context, generate_questions
 import json
 from streamlit_inspector import inspect
 
@@ -35,6 +35,8 @@ st.title("Learning with LLMs Concept Explorer")
 
 if st.session_state.has_saved_openai_key:
     st.markdown("**Feedback please!** Let us know what you think in our project channel [#liminal](slack://channel?team=T027LFU12&id=C06MJQQ1350) or via DM to [@jwhiting](slack://user?team=T027LFU12&id=U03U66G63MW) or [@Jacob Ervin](slack://user?team=T027LFU12&id=U04BV9MUJRZ)")
+
+can_generate_quiz = not (st.session_state.goals == '' or st.session_state.skills == '' or st.session_state.source_material == '' or st.session_state.openai_api_key == '')
 
 col1, col2 = st.columns([1,3])
 
@@ -148,12 +150,8 @@ def quiz():
     current_quiz_section(topics, learning_context)
 
 with col2:
-    goals = st.session_state.goals
-    skills = st.session_state.skills
-    source_material = st.session_state.source_material
-    openai_api_key = st.session_state.openai_api_key
-    if goals == '' or skills == '' or source_material == '' or openai_api_key == '':
-        st.warning("Please fill in all fields.")
-    else:
+    if can_generate_quiz:
         quiz()
+    else:
+        st.warning("Please fill in all fields.")
 

@@ -1,13 +1,3 @@
-import json
-
-# json_example = """{ "questions": [ {
-# "questionTitle": "What is the primary subject of the material?", 
-# "answers": ["cats","outer space","coffee","poetry"], 
-# "answerIndex": 2, 
-# "reasoning": "Coffee is the only choice that is mentioned by the document.",
-# "context_relevance": "Roasting your own coffee is a great way to develop loyal business as a new coffee shop owner",
-# "requisite_knowledge": "Go back and review the fundamentals of coffee preparation",
-# "follow_up_knowledge": "Learn next about coffee packaging and branding best practices", }, ... ], }"""
 json_example = """{ "questions": [ {
 "questionTitle": "<QUESTION TITLE>", 
 "answers": ["<ANSWER 1>","<ANSWER 2>","<ANSWER 3>","<ANSWER 4>"], 
@@ -16,39 +6,6 @@ json_example = """{ "questions": [ {
 "context_relevance": "<LEARNING CONTEXT RELEVANCE>",
 "requisite_knowledge": "<HOW TO GET THE RIGHT ANSWER>",
 "follow_up_knowledge": "<WHAT TO LEARN NEXT>, }, ... ], }"""
-
-# a json schema specification for the example above:
-# gpt4o doesn't actually seem to need this to produce the correct output, the example works and with fewer tokens.
-json_schema = {
-    "type": "object",
-    "properties": {
-        "questions": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "questionTitle": { "type": "string" },
-                    "answers": {
-                        "type": "array",
-                        "items": { "type": "string" },
-                        "minItems": 4,
-                        "maxItems": 4
-                    },
-                    "answerIndex": { "type": "integer" },
-                    "reasoning": { "type": "string" },
-                    "context_relevance": { "type": "string" },
-                    "requisite_knowledge": { "type": "string" },
-                    "follow_up_knowledge": { "type": "string" }
-                },
-                "required": ["questionTitle", "answers", "answerIndex", "reasoning", "context_relevance", "requisite_knowledge", "follow_up_knowledge"]
-            },
-            "minItems": 3,
-            "maxItems": 6
-        }
-    },
-    "required": ["questions"]
-}
-json_schema = json.dumps(json_schema) # compact whitespace
 
 def questions_prompt(*, for_key_topic, learning_context, source_material):
     return f"""
